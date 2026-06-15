@@ -1,6 +1,6 @@
 module pyra
 
-go 1.25.3
+go 1.26.4
 
 require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
@@ -16,7 +16,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/docker v28.3.3+incompatible // indirect
-	github.com/docker/go-connections v0.6.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/ebitengine/purego v0.8.4 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -69,6 +68,7 @@ require (
 require (
 	github.com/a-h/templ v0.2.778
 	github.com/brianvoe/gofakeit/v7 v7.8.0
+	github.com/docker/go-connections v0.6.0
 	github.com/golang-cz/devslog v0.0.15
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/sessions v1.4.0
