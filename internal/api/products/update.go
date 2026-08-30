@@ -21,7 +21,7 @@ func (h *UpdateProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	log := h.RequestLogger(r)
 	session := h.Session(r)
 
-	uid, version, err := productRef(r)
+	ref, err := productRef(r)
 	if err != nil {
 		log.DebugContext(ctx, "malformed product UID or version", "error", err, "path", r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
@@ -38,8 +38,7 @@ func (h *UpdateProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	product.UID = uid
-	product.Version = version
+	product.ProductRef = ref
 
 	err = nutrition.UpdateProduct(r.Context(), h.ProductRepo, &product)
 	if err != nil {

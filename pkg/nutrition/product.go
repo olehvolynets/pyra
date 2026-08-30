@@ -20,9 +20,7 @@ func (p *Product) IsArchived() bool {
 }
 
 type ProductRecord struct {
-	ID      ProductID `fake:"-"`
-	UID     ProductUID `fake:"{uuid}"`
-	Version ProductVersion `fake:"1"`
+	ProductRef
 
 	Name ProductName `fake:"{productname}"`
 
@@ -34,23 +32,26 @@ type ProductRecord struct {
 	UpdatedAt time.Time `fake:"-"`
 }
 
-func (p *ProductRecord) Format(f fmt.State, verb rune) {
-	f.Write([]byte("aasdlfkj"))
-}
-
-func (p *ProductRecord) String() string {
-	return ""
-}
+// func (p *ProductRecord) Format(f fmt.State, verb rune) {
+// 	f.Write([]byte("aasdlfkj"))
+// }
+//
+// func (p *ProductRecord) String() string {
+// 	return ""
+// }
 
 type (
-	ProductID      uint64
-	ProductUID     string
-	ProductVersion int32
+	ProductUID     UID
+	ProductVersion Version
 	ProductName    string
 )
 
+type ProductRef struct {
+	UID     ProductUID `fake:"{uuid}"`
+	Version ProductVersion `fake:"1"`
+}
+
 type ProductErrors struct {
-	ID      error
 	UID     error
 	Version error
 
@@ -60,22 +61,20 @@ type ProductErrors struct {
 }
 
 func (e *ProductErrors) HasErrors() bool {
-	return e.ID != nil ||
-		e.UID != nil ||
+	return e.UID != nil ||
 		e.Version != nil ||
 		e.Name != nil ||
 		e.MacroErrors.HasErrors()
 }
 
-const productErrFmt = `ID: %w
-UID: %w
+const productErrFmt = `UID: %w
 Version: %w
 Name: %w
 %s`
 
 func (e *ProductErrors) Error() string {
 	return fmt.Errorf(productErrFmt,
-		e.ID, e.UID, e.Version, e.Name,
+		e.UID, e.Version, e.Name,
 		e.MacroErrors.Error(),
 	).Error()
 }

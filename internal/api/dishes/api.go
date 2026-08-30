@@ -27,8 +27,8 @@ func (api *API) Index() http.Handler {
 	}
 
 	return &ListDishesHandler{
-		Handler:  baseHandler,
-		dishRepo: dishes.NewRepository(api.DB),
+		Handler: baseHandler,
+		repo:    dishes.NewRepository(api.DB),
 	}
 }
 
@@ -41,8 +41,8 @@ func (api *API) Show() http.Handler {
 
 	return &ShowDishHandler{
 		Handler:     baseHandler,
-		dishRepo:    dishes.NewRepository(api.DB),
-		productRepo: products.NewRepository(api.DB),
+		DishRepo:    dishes.NewRepository(api.DB),
+		ProductRepo: products.NewRepository(api.DB),
 	}
 }
 
@@ -67,5 +67,14 @@ func (api *API) Create() http.Handler {
 
 	return &CreateDishHandler{
 		Handler: baseHandler,
+		DishRepo: dishes.NewRepository(api.DB),
+		// IngredientRepo: dishes.NewRepository(api.DB),
+	}
+}
+
+func (api *API) Delete() http.Handler {
+	return &DeleteDishHandler{
+		Handler: api.NewHandler(),
+		DishRepo: dishes.NewRepository(api.DB),
 	}
 }

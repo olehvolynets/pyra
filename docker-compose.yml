@@ -3,6 +3,7 @@ services:
   #   build: .
   #   ports:
   #     - 3000:3000
+
   db:
     image: postgres
     ports:
@@ -12,7 +13,21 @@ services:
       POSTGRES_PASSWORD: pyra
       POSTGRES_DB: pyra_dev
     volumes:
-      - pyra-db:/var/lib/postgresql/data
+      # - pyra-db:/var/lib/postgresql/data
+      - ./tmp/db/dev/:/var/lib/postgresql
+
+  db-test:
+    image: postgres
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: pyra
+      POSTGRES_PASSWORD: pyra
+      POSTGRES_DB: pyra_test
+    volumes:
+      # - pyra-db-test:/var/lib/postgresql/data
+      - ./tmp/db/test/:/var/lib/postgresql
 
 volumes:
   pyra-db:
+  pyra-db-test:

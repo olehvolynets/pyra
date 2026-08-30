@@ -75,10 +75,16 @@ func (m Macro) Validate() MacroErrors {
 // Normalize - scales macronutrient values from "portion" to 100.
 // Records are stored in a normalized form N/100 g.
 func (m *Macro) Normalize(portion float64) {
-	ratio := 100.0 / portion
+	factor := 100.0 / portion
 
-	m.Calories = m.Calories.Scale(ratio)
-	m.Proteins = m.Proteins.Scale(ratio)
-	m.Fats = m.Fats.Scale(ratio)
-	m.Carbs = m.Carbs.Scale(ratio)
+	*m = m.Scale(factor)
+}
+
+func (m *Macro) Scale(factor float64) Macro {
+	return Macro{
+		Calories: m.Calories.Scale(factor),
+		Proteins: m.Proteins.Scale(factor),
+		Fats: m.Fats.Scale(factor),
+		Carbs: m.Carbs.Scale(factor),
+	}
 }

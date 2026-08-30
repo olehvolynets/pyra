@@ -18,13 +18,14 @@ func (h *DeleteProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	ctx := r.Context()
 	log := h.RequestLogger(r)
 
-	uid, version, err := productRef(r)
+	ref, err := productRef(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	product, err := h.ProductRepo.FindByRef(ctx, uid, version)
+	// FIX: no need, handle NotFound in deletion
+	_, err = h.ProductRepo.FindByRef(ctx, ref)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.NotFound(w, r)
@@ -36,7 +37,7 @@ func (h *DeleteProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = h.ProductRepo.Delete(ctx, product.ID)
+	err = h.ProductRepo.Delete(ctx, ref)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.NotFound(w, r)

@@ -9,14 +9,14 @@ import (
 
 type ListDishesHandler struct {
 	*base.Handler
-	dishRepo nutrition.DishRepository
+	repo nutrition.DishRepository
 }
 
 func (h *ListDishesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := h.RequestLogger(r)
 
-	dishes, err := nutrition.ListDishes(ctx, h.dishRepo)
+	dishes, err := nutrition.ListDishes(ctx, h.repo)
 	if err != nil {
 		log.ErrorContext(ctx, "failed to list dishes", "error", err)
 		h.InternalServerError(w)

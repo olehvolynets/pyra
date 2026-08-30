@@ -11,22 +11,22 @@ import (
 
 type ShowDishHandler struct {
 	*base.Handler
-	dishRepo nutrition.DishRepository
 
-	productRepo nutrition.ProductRepository
+	DishRepo nutrition.DishRepository
+	ProductRepo nutrition.ProductRepository
 }
 
 func (h *ShowDishHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := h.RequestLogger(r)
 
-	id, err := dishID(r)
+	ref, err := dishRef(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	dish, err := h.dishRepo.FindByID(ctx, id)
+	dish, err := h.DishRepo.FindByRef(ctx, ref)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			h.NotFound(w, r)
@@ -38,14 +38,14 @@ func (h *ShowDishHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	versions, err := h.dishRepo.Versions(ctx, dish.UID)
+	versions, err := h.DishRepo.Versions(ctx, dish.UID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.TraceContext(ctx, "failed to retrieve dish versions", "error", err)
 		h.InternalServerError(w)
 		return
 	}
 
-	products, err := h.productRepo.ForDish(ctx, dish.ID)
+	products, err := h.ProductRepo.ForDish(ctx, dish.UID, dish.Version)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.TraceContext(ctx, "failed to retrieve dishe's products", "error", err)
 		h.InternalServerError(w)

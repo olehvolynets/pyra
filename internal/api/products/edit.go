@@ -18,17 +18,17 @@ func (h *EditProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := h.RequestLogger(r)
 
-	uid, version, err := productRef(r)
+	ref, err := productRef(r)
 	if err != nil {
 		log.DebugContext(ctx, "malformed product UID or version", "error", err, "path", r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	product, err := h.productRepo.FindByRef(ctx, uid, version)
+	product, err := h.productRepo.FindByRef(ctx, ref)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			log.DebugContext(ctx, "product not found", "uid", uid, "version", version)
+			log.DebugContext(ctx, "product not found", "uid", ref.UID, "version", ref.Version)
 			h.NotFound(w, r)
 			return
 		}

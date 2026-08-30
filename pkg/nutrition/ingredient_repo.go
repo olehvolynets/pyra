@@ -8,7 +8,8 @@ import (
 type IngredientRepository interface {
 	db.Repository[IngredientRepository]
 
-	GetIngredientables(context.Context, []IngredientInfo) ([]Ingredientable, error)
-
 	CreateIngredients(context.Context, []Ingredient) error
+	// LoadIngredientables - loads data of the items used as ingredients and
+	// populates the corresponding attributes of the provided Ingredient's in place.
+	LoadIngredientables(context.Context, []Ingredient) error
 }

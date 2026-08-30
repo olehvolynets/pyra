@@ -28,120 +28,102 @@ func (r *Repository) WithTx(tx db.DBTX) nutrition.IngredientRepository {
 	}
 }
 
-func (r *Repository) GetIngredientables(
+func (r *Repository) LoadIngredientables(
 	ctx context.Context,
-	infos []nutrition.IngredientInfo,
-) ([]nutrition.Ingredientable, error) {
-	if len(infos) == 0 {
-		return nil, nil
+	ingredients []nutrition.Ingredient,
+) error {
+	if len(ingredients) == 0 {
+		return nil
 	}
 
-	var productPart []nutrition.Ingredientable
-	var dishPart []nutrition.Ingredientable
+	type mapping struct {
+		Indexes []int
+		Placeholders []string
+	}
 
-	var productPlaceholders []string
-	var dishPlaceholders []string
+	partition := make(map[nutrition.IngredientType]mapping, 2)
+	values := make([]any, 0, len(ingredients) * 2) // len * (UID + version)
 
-	values := make([]any, 0, len(infos) * 2) // len * (UID + version)
+	for i, ing := range ingredients {
+		switch ing.Ingredientable.Type {
+		case nutrition.IngredientProduct, nutrition.IngredientDish:
+			part := partition[ing.Ingredientable.Type]
 
-	for i, info := range infos {
-		values = append(values, info.UID, info.Version)
+			part.Indexes = append(part.Indexes, i)
 
-		placeholder := fmt.Sprintf("($%d, $%d)", i * 2 + 1, i * 2 + 2)
-		ingredientable := nutrition.Ingredientable{
-			Info: info,
-		}
+			placeholder := fmt.Sprintf("($%d, $%d)", i * 2 + 1, i * 2 + 2)
+			part.Placeholders = append(part.Placeholders, placeholder)
+			values = append(values, ing.Ingredientable.UID, ing.Ingredientable.Version)
 
-
-		switch info.Type {
-		case nutrition.IngredientProduct:
-			productPart = append(productPart, ingredientable)
-			productPlaceholders = append(productPlaceholders, placeholder)
-		case nutrition.IngredientDish:
-			dishPart = append(dishPart, ingredientable)
-			dishPlaceholders = append(dishPlaceholders, placeholder)
+			partition[ing.Ingredientable.Type] = part
 		default:
-			panic(fmt.Errorf("unhandled ingredientable type %d", info.Type))
+			panic(fmt.Errorf("unhandled ingredientable type %d", ing.Ingredientable.Type))
 		}
 	}
 
 	const productsQuery = `
-SELECT id, uid, version, calories, proteins, fats, carbs, %d AS ingredientable_type
+SELECT uid, version, calories, proteins, fats, carbs, %s AS ingredientable_type
 FROM products
 WHERE (uid, version) IN (
 	%s
 )`
 	const dishesQuery = `
-SELECT id, uid, version, calories, proteins, fats, carbs, %d AS ingredientable_type
+SELECT uid, version, calories, proteins, fats, carbs, %s AS ingredientable_type
 FROM dishes
 WHERE (uid, version) IN (
 	%s
-);`
-	const union = `
-UNION
-`
+)`
+	const union = "\nUNION\n"
 
 	var query strings.Builder
 
-	if len(productPart) > 0 {
+	if productPart, ok := partition[nutrition.IngredientProduct]; ok {
 		fmt.Fprintf(&query, productsQuery,
-			nutrition.IngredientProduct, strings.Join(productPlaceholders, ",\n\t"))
+			nutrition.IngredientProduct, strings.Join(productPart.Placeholders, ",\n\t"))
 	}
 	
-	if len(dishPart) > 0 {
+	if dishPart, ok := partition[nutrition.IngredientDish]; ok {
 		if query.Len() > 0 {
 			query.WriteString(union)
 		}
 
 		fmt.Fprintf(&query, dishesQuery,
-			nutrition.IngredientDish, strings.Join(dishPlaceholders, ",\n\t"))
+			nutrition.IngredientDish, strings.Join(dishPart.Placeholders, ",\n\t"))
 	}
+
+	fmt.Fprint(&query, ";")
 
 	rows, err := r.db.QueryContext(ctx, query.String(), values...)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var id uint64 	
-		var uid string
-		var version int32
-		var t nutrition.IngredientableType
+		var uid nutrition.UID
+		var version nutrition.Version
+		var t nutrition.IngredientType
 		var m nutrition.Macro
 
-		err = rows.Scan(&id, &uid, &version, &m.Calories, &m.Proteins, &m.Fats, &m.Carbs, &t)
+		err = rows.Scan(&uid, &version, &m.Calories, &m.Proteins, &m.Fats, &m.Carbs, &t)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		switch t {
-		case nutrition.IngredientProduct:
-			for i := range productPart {
-				item := &productPart[i]
-				if item.Info.UID == uid && item.Info.Version == version {
-					item.ID = id
-					item.Macro = m
-				}
-			}
-		case nutrition.IngredientDish:
-			for i := range dishPart {
-				item := &dishPart[i]
-				if item.Info.UID == uid && item.Info.Version == version {
-					item.ID = id
-					item.Macro = m
+		case nutrition.IngredientProduct, nutrition.IngredientDish:
+			for _, i := range partition[t].Indexes {
+				item := &ingredients[i]
+				if item.Ingredientable.UID == uid && item.Ingredientable.Version == version {
+					item.Ingredientable.Macro = m
 				}
 			}
 		default:
 			panic("WTF?")
 		}
 	}
-
-	ingredientables := make([]nutrition.Ingredientable, 0, len(productPart) + len(dishPart))
-	ingredientables = append(ingredientables, productPart...)
-	ingredientables = append(ingredientables, dishPart...)
 	
-	return ingredientables, nil
+	return nil
 }
 
 func (r *Repository) CreateIngredients(ctx context.Context, ingredients []nutrition.Ingredient) error {
@@ -150,24 +132,25 @@ func (r *Repository) CreateIngredients(ctx context.Context, ingredients []nutrit
 	}
 
 	placeholders := make([]string, 0, len(ingredients))
-	values := make([]any, 0, len(ingredients)*6)
+	values := make([]any, 0, len(ingredients)*8)
 
 	for idx, ing := range ingredients {
-		phIdx := idx * 6
+		phIdx := idx * 8
 
 		placeholders = append(placeholders, fmt.Sprintf(
-			"($%d, $%d, $%d, $%d, $%d, $%d)",
-			phIdx + 1, phIdx + 2, phIdx + 3, phIdx + 4, phIdx + 5, phIdx + 6,
+			"($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)",
+			phIdx + 1, phIdx + 2, phIdx + 3, phIdx + 4, phIdx + 5, phIdx + 6, phIdx + 7, phIdx + 8,
 		))
 
 		values = append(values,
-			ing.DishID, ing.IngredientableID, ing.IngredientableType,
+			ing.DishUID, ing.DishVersion,
+			ing.Ingredientable.Type, ing.Ingredientable.UID, ing.Ingredientable.Version,
 			ing.Amount, ing.Unit, ing.Idx)
 	}
 
 	query := `
 INSERT INTO ingredients (
-	dish_id, ingredientable_id, ingredientable_type, amount, unit, idx
+	dish_uid, dish_version, ingredientable_type, ingredientable_uid, ingredientable_version, amount, unit, idx
 ) VALUES %s`
 
 	query = fmt.Sprintf(query, strings.Join(placeholders, ",\n\t"))

@@ -3,6 +3,7 @@ package dishes
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"pyra/pkg/db"
 	"pyra/pkg/log"
@@ -36,8 +37,8 @@ func (r *Repository) Index(ctx context.Context) ([]nutrition.Dish, error) {
 	return r.scanAllRows(rows)
 }
 
-func (r *Repository) FindByID(ctx context.Context, id nutrition.DishID) (nutrition.Dish, error) {
-	row := r.db.QueryRowContext(ctx, dishByIDQuery, id)
+func (r *Repository) FindByRef(ctx context.Context, ref nutrition.DishRef) (nutrition.Dish, error) {
+	row := r.db.QueryRowContext(ctx, dishByRefQuery, ref.UID, ref.Version)
 
 	return r.scanRow(row)
 }
@@ -56,8 +57,8 @@ func (r *Repository) Versions(ctx context.Context, uid nutrition.DishUID) ([]nut
 	return r.scanAllRows(rows)
 }
 
-func (r *Repository) FindAllByProductID(ctx context.Context, productID nutrition.ProductID) ([]nutrition.Dish, error) {
-	rows, err := r.db.QueryContext(ctx, dishesByProductQuery, productID)
+func (r *Repository) FindAllByProductRef(ctx context.Context, ref nutrition.ProductRef) ([]nutrition.Dish, error) {
+	rows, err := r.db.QueryContext(ctx, dishesByProductQuery, ref.UID, ref.Version)
 	if err != nil {
 		return nil, err
 	}
@@ -77,10 +78,13 @@ func (r *Repository) FindAllByRefs(ctx context.Context, refs []nutrition.DishRef
 func (r *Repository) IsNameTaken(ctx context.Context, name nutrition.DishName, uid nutrition.DishUID) (bool, error) {
 	row := r.db.QueryRowContext(ctx, isDishNameTakenQuery, name, uid)
 
-	var result bool
-	err := row.Scan(&result)
+	var one int
+	err := row.Scan(&one)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
 
-	return result, err
+	return one == 1, err
 }
 
 func (r *Repository) Create(ctx context.Context, dish *nutrition.Dish) error {
@@ -88,13 +92,31 @@ func (r *Repository) Create(ctx context.Context, dish *nutrition.Dish) error {
 		dish.UID, dish.Version, dish.Name,
 		dish.Calories, dish.Proteins, dish.Fats, dish.Carbs)
 
-	return row.Scan(&dish.ID, &dish.CreatedAt, &dish.UpdatedAt)
+	return row.Scan(&dish.CreatedAt, &dish.UpdatedAt)
+}
+
+func (r *Repository) Delete(ctx context.Context, ref nutrition.DishRef) error {
+	res, err := r.db.ExecContext(ctx, deleteByRefQuery, ref.UID, ref.Version)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 func (r *Repository) scanRow(row *sql.Row) (nutrition.Dish, error) {
 	dish := nutrition.Dish{}
 
-	err := row.Scan(&dish.ID, &dish.UID, &dish.Version, &dish.Name,
+	err := row.Scan(&dish.UID, &dish.Version, &dish.Name,
 		&dish.Calories, &dish.Proteins, &dish.Fats, &dish.Carbs,
 		&dish.CreatedAt, &dish.UpdatedAt)
 
@@ -104,7 +126,7 @@ func (r *Repository) scanRow(row *sql.Row) (nutrition.Dish, error) {
 func (r *Repository) scanRows(rows *sql.Rows) (nutrition.Dish, error) {
 	dish := nutrition.Dish{}
 
-	err := rows.Scan(&dish.ID, &dish.UID, &dish.Version, &dish.Name,
+	err := rows.Scan(&dish.UID, &dish.Version, &dish.Name,
 		&dish.Calories, &dish.Proteins, &dish.Fats, &dish.Carbs,
 		&dish.CreatedAt, &dish.UpdatedAt)
 

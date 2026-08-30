@@ -7,63 +7,54 @@ import (
 )
 
 type Dish struct {
-	ID      DishID
-	UID     DishUID
-	Version DishVersion
+	DishRecord
 
-	Name DishName
+	Ingredients []Ingredient
+
+	Errors DishErrors
+}
+
+type DishRecord struct {
+	UID     DishUID     `fake:"{uuid}"`
+	Version DishVersion `fake:"1"`
+
+	Name DishName `fake:"{productname}"`
 
 	Macro
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `fake:"-"`
+	UpdatedAt time.Time `fake:"-"`
 }
 
 type DishErrors struct {
-	ID      error
-	UID     error
-	Version error
-
+	Base error
 	Name error
 
 	Macro MacroErrors
-
-	Ingredients []IngredientErrors
 }
 
 func (e *DishErrors) HasErrors() bool {
-	idErr := e.ID != nil
-	uidErr := e.UID != nil
-	versionErr := e.Version != nil
-	nameErr := e.Version != nil
+	baseErr := e.Base != nil
+	nameErr := e.Name != nil
 
-	return idErr || uidErr || versionErr || nameErr || e.Macro.HasErrors()
+	return baseErr || nameErr || e.Macro.HasErrors()
 }
 
 const dishErrFormat = `
-ID: %w
-UID: %w
-Version: %w
+Base: %w
 Name: %w
-%s`
+%s
+`
 
 func (e *DishErrors) Error() string {
-	return fmt.Errorf(dishErrFormat,
-		e.ID, e.UID, e.Version, e.Name,
-		e.Macro.Error(),
-	).Error()
+	return fmt.Errorf(dishErrFormat, e.Base, e.Name, e.Macro.Error()).Error()
 }
 
 type (
-	DishID      uint64
-	DishUID     string
-	DishVersion int32
+	DishUID     UID
+	DishVersion Version
 	DishName    string
 )
-
-func NewDishUID(s string) (DishUID, error) {
-	return DishUID(s), nil
-}
 
 func NewDishName(n string) (DishName, error) {
 	n = strings.TrimSpace(n)

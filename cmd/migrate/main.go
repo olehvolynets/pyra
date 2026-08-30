@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	// slog.SetLogLoggerLevel(slog.LevelDebug)
+	slog.SetLogLoggerLevel(slog.LevelDebug)
 
 	// FIX: load depending on env
 	if err := godotenv.Load("/Users/sagg0t/devel/pyra/.env.test"); err != nil {

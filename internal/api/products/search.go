@@ -44,7 +44,8 @@ func (h *SearchProductsHandler) buildSearchResults(products []nutrition.Product)
 	searchResults := make([]searchResult, len(products))
 	for idx, product := range products {
 		searchResults[idx] = searchResult{
-			ID:       uint64(product.ID),
+			UID:      string(product.UID),
+			Version:  uint16(product.Version),
 			Label:    string(product.Name),
 			Calories: float32(product.Calories),
 			Proteins: float32(product.Proteins),
@@ -57,8 +58,9 @@ func (h *SearchProductsHandler) buildSearchResults(products []nutrition.Product)
 }
 
 type searchResult struct {
-	ID    uint64 `json:"id"`
-	Label string `json:"label"`
+	UID     string `json:"uid"`
+	Version uint16 `json:"version"`
+	Label   string `json:"label"`
 
 	Calories float32 `json:"calories"`
 	Proteins float32 `json:"proteins"`

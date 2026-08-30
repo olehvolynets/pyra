@@ -62,7 +62,7 @@ func Test_UpdateProductHandler(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, res.StatusCode)
 
-		updatedProduct, err := api.ProductRepo.FindByID(t.Context(), product.ID)
+		updatedProduct, err := api.ProductRepo.FindByRef(t.Context(), product.ProductRef)
 		require.NoError(t, err)
 
 		assert.Equal(t, paramsProduct.Name, updatedProduct.Name)

@@ -31,29 +31,13 @@ func (r *Repository) WithTx(tx db.DBTX) nutrition.ProductRepository {
 	return NewRepository(tx)
 }
 
-func (r *Repository) FindByID(
-	ctx context.Context,
-	id nutrition.ProductID,
-) (nutrition.Product, error) {
-	row := r.db.QueryRowContext(ctx, findByIDQuery, id)
-	
-	return r.scanProductRow(row)
-}
-
-func (r *Repository) FindByRef(
-	ctx context.Context,
-	uid nutrition.ProductUID,
-	version nutrition.ProductVersion,
-) (nutrition.Product, error) {
-	row := r.db.QueryRowContext(ctx, findByRefQuery, uid, version)
+func (r *Repository) FindByRef(ctx context.Context, ref nutrition.ProductRef) (nutrition.Product, error) {
+	row := r.db.QueryRowContext(ctx, findByRefQuery, ref.UID, ref.Version)
 
 	return r.scanProductRow(row)
 }
 
-func (r *Repository) Versions(
-	ctx context.Context,
-	uid nutrition.ProductUID,
-) ([]nutrition.Product, error) {
+func (r *Repository) Versions(ctx context.Context, uid nutrition.ProductUID) ([]nutrition.Product, error) {
 	rows, err := r.db.QueryContext(ctx, productVersionsQuery, uid)
 	if err != nil {
 		return nil, err
@@ -63,11 +47,8 @@ func (r *Repository) Versions(
 	return r.scanProducts(rows)
 }
 
-func (r *Repository) FindAllByIDs(
-	ctx context.Context,
-	ids []nutrition.ProductID,
-) ([]nutrition.Product, error) {
-	rows, err := r.db.QueryContext(ctx, findAllByIDsQuery, ids)
+func (r *Repository) FindAllByRefs(ctx context.Context, refs []nutrition.ProductRef) ([]nutrition.Product, error) {
+	rows, err := r.db.QueryContext(ctx, findAllByIDsQuery, refs)
 	if err != nil {
 		return nil, err
 	}
@@ -76,36 +57,24 @@ func (r *Repository) FindAllByIDs(
 	return r.scanProducts(rows)
 }
 
-func (r *Repository) IsNameTaken(
-	ctx context.Context,
-	name nutrition.ProductName,
-) (bool, error) {
+func (r *Repository) IsNameTaken(ctx context.Context, name nutrition.ProductName) (bool, error) {
 	row := r.db.QueryRowContext(ctx, nameTakenQuery, name)
-	if err := row.Err(); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return false, nil
-		}
-
-		return false, err
-	}
 
 	var one int
-	if err := row.Scan(&one); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return false, nil
-		}
-
-		return false, err
+	err := row.Scan(&one)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
 	}
 
-	return true, nil
+	return one == 1, err
 }
 
 func (r *Repository) ForDish(
 	ctx context.Context,
-	id nutrition.DishID,
+	uid nutrition.DishUID,
+	version nutrition.DishVersion,
 ) ([]nutrition.Product, error) {
-	rows, err := r.db.QueryContext(ctx, productsForDishQuery, id)
+	rows, err := r.db.QueryContext(ctx, productsForDishQuery, uid, version)
 	if err != nil {
 		return nil, err
 	}
@@ -128,20 +97,32 @@ func (r *Repository) Create(ctx context.Context, p *nutrition.Product) error {
 	row := r.db.QueryRowContext(ctx, createProductQuery,
 		p.UID, p.Name, p.Calories, p.Proteins, p.Fats, p.Carbs)
 
-	return row.Scan(&p.ID, &p.Version)
+	return row.Scan(&p.Version, &p.CreatedAt, &p.UpdatedAt)
 }
 
 func (r *Repository) CreateVersion(ctx context.Context, p *nutrition.Product) error {
 	row := r.db.QueryRowContext(ctx, createProductVersionQuery,
 		p.UID, p.Name, p.Calories, p.Proteins, p.Fats, p.Carbs)
 
-	return row.Scan(&p.ID, &p.Version, &p.CreatedAt)
+	return row.Scan(&p.Version, &p.CreatedAt, &p.UpdatedAt)
 }
 
-func (r *Repository) Delete(ctx context.Context, id nutrition.ProductID) error {
-	_, err := r.db.ExecContext(ctx, deleteByIDQuery, id)
+func (r *Repository) Delete(ctx context.Context, ref nutrition.ProductRef) error {
+	res, err := r.db.ExecContext(ctx, deleteByRefQuery, ref.UID, ref.Version)
+	if err != nil {
+		return err
+	}
 
-	return err
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 func (r *Repository) Update(ctx context.Context, product *nutrition.Product) error {
@@ -162,8 +143,9 @@ func (r *Repository) Update(ctx context.Context, product *nutrition.Product) err
 	return nil
 }
 
-func (r *Repository) Archive(ctx context.Context, id nutrition.ProductID, ts time.Time) error {
-	result, err := r.db.ExecContext(ctx, "UPDATE products SET archived_at = $2 WHERE id = $1", id, ts)
+func (r *Repository) Archive(ctx context.Context, ref nutrition.ProductRef, ts time.Time) error {
+	result, err := r.db.ExecContext(ctx, "UPDATE products SET archived_at = $1 WHERE uid = $2 AND version = $3",
+		ts, ref.UID, ref.Version)
 	if err != nil {
 		return err
 	}
@@ -207,8 +189,8 @@ func (r *Repository) MaxVersion(
 	return version, nil
 }
 
-func (r *Repository) UsedInDishes(ctx context.Context, id nutrition.ProductID) (bool, error) {
-	row := r.db.QueryRowContext(ctx, usedInDishesQuery, id, nutrition.IngredientProduct)
+func (r *Repository) UsedInDishes(ctx context.Context, ref nutrition.ProductRef) (bool, error) {
+	row := r.db.QueryRowContext(ctx, usedInDishesQuery, nutrition.IngredientProduct, ref.UID, ref.Version)
 
 	var one int
 	err := row.Scan(&one)	
@@ -245,7 +227,7 @@ func (r *Repository) scanProducts(rows *sql.Rows) ([]nutrition.Product, error) {
 func (r *Repository) scanProductRows(rows *sql.Rows) (nutrition.Product, error) {
 	product := nutrition.Product{}
 
-	err := rows.Scan(&product.ID, &product.UID, &product.Version, &product.Name,
+	err := rows.Scan(&product.UID, &product.Version, &product.Name,
 		&product.Calories, &product.Proteins, &product.Fats, &product.Carbs,
 		&product.CreatedAt, &product.UpdatedAt)
 
@@ -255,7 +237,7 @@ func (r *Repository) scanProductRows(rows *sql.Rows) (nutrition.Product, error) 
 func (r *Repository) scanProductRow(row *sql.Row) (nutrition.Product, error) {
 	product := nutrition.Product{}
 
-	err := row.Scan(&product.ID, &product.UID, &product.Version, &product.Name,
+	err := row.Scan(&product.UID, &product.Version, &product.Name,
 		&product.Calories, &product.Proteins, &product.Fats, &product.Carbs,
 		&product.CreatedAt, &product.UpdatedAt)
 

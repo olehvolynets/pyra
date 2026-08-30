@@ -22,10 +22,6 @@ func ListProducts(ctx context.Context, repo ProductRepository) ([]Product, error
 	return repo.Index(ctx)
 }
 
-func FindProductByID(ctx context.Context, repo ProductRepository, id ProductID) (Product, error) {
-	return repo.FindByID(ctx, id)
-}
-
 func CreateProduct(ctx context.Context, repo ProductRepository, product *Product) (err error) {
 	tx, err := repo.BeginTx(ctx)
 	if err != nil {
@@ -36,6 +32,7 @@ func CreateProduct(ctx context.Context, repo ProductRepository, product *Product
 	repo = repo.WithTx(tx)
 
 	product.UID = ProductUID(uuid.New().String())
+	product.Version = ProductVersion(1)
 
 	isTaken, err := repo.IsNameTaken(ctx, product.Name)
 	if err != nil {
@@ -62,7 +59,7 @@ func UpdateProduct(ctx context.Context, repo ProductRepository, product *Product
 
 	repo = repo.WithTx(tx)
 
-	currentState, err := repo.FindByRef(ctx, product.UID, product.Version)
+	currentState, err := repo.FindByRef(ctx, product.ProductRef)
 	if err != nil {
 		return err
 	}
@@ -73,14 +70,14 @@ func UpdateProduct(ctx context.Context, repo ProductRepository, product *Product
 
 	// FIX: actually being used in dishes is not a problem. Only if that dish has been
 	// used in the menu - then it becomes untouchable.
-	usedInDishes, err := repo.UsedInDishes(ctx, currentState.ID)
+	usedInDishes, err := repo.UsedInDishes(ctx, product.ProductRef)
 	if err != nil {
 		return err
 	}
 
 	if usedInDishes {
 		archivedAt := time.Now().UTC()
-		err := repo.Archive(ctx, product.ID, archivedAt)
+		err := repo.Archive(ctx, product.ProductRef, archivedAt)
 		if err != nil {
 			return err
 		}
@@ -99,12 +96,7 @@ func UpdateProduct(ctx context.Context, repo ProductRepository, product *Product
 	return tx.Commit()
 }
 
-func DeleteProduct(
-	ctx context.Context,
-	repo ProductRepository,
-	uid ProductUID,
-	version ProductVersion,
-) error {
+func DeleteProduct(ctx context.Context, repo ProductRepository, ref ProductRef) error {
 	tx, err := repo.BeginTx(ctx)
 	if err != nil {
 		return err
@@ -113,7 +105,7 @@ func DeleteProduct(
 
 	repo = repo.WithTx(tx)
 
-	product, err := repo.FindByRef(ctx, uid, version)
+	product, err := repo.FindByRef(ctx, ref)
 	if err != nil {
 		return err
 	}
@@ -122,7 +114,7 @@ func DeleteProduct(
 		return ErrArchived
 	}
 
-	usedInDishes, err := repo.UsedInDishes(ctx, product.ID)
+	usedInDishes, err := repo.UsedInDishes(ctx, ref)
 	if err != nil {
 		return err
 	}
