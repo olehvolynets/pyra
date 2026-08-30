@@ -8,7 +8,6 @@ build: pyra_build
 
 .PHONY: pyra_build
 pyra_build:
-	@templ generate
 	@go build -o ./bin/pyra ./cmd/pyra
 
 .PHONY: pyra_build_dev
