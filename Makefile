@@ -35,12 +35,12 @@ migrate: migrate_build
 rollback: migrate_build
 	@./bin/migrate rollback
 
-.PHONY: migrate_status
-migrate_status: migrate_build
+.PHONY: migrate-status
+migrate-status: migrate_build
 	@./bin/migrate status
 
-.PHONY: migrate_version
-migrate_version: migrate_build
+.PHONY: migrate-version
+migrate-version: migrate_build
 	@./bin/migrate version
 
 # END MIGRATE
