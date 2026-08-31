@@ -117,8 +117,8 @@ func (f *ProductForm) SetProductErrors(e nutrition.ProductErrors) {
 }
 
 type productFormErrors struct {
-	Per error
 	nutrition.ProductErrors
+	Per error
 }
 
 func (e *productFormErrors) HasErrors() bool {

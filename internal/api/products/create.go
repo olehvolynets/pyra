@@ -29,15 +29,15 @@ func CreateProduct(api *API, w http.ResponseWriter, r *http.Request) {
 	if form.HasErrors() {
 		log.DebugContext(ctx, "create product validation error", "error", form.Errors)
 	} else {
-		err = nutrition.CreateProduct(ctx, api.ProductRepo, &product)
-		if err != nil {
-			log.DebugContext(ctx, "failed to save product", "error", err)
+		create_err := nutrition.CreateProduct(ctx, api.ProductRepo, &product)
+		if create_err != nil {
+			log.DebugContext(ctx, "failed to save product", "error", create_err)
 
-			if !errors.Is(err, nutrition.ErrProductInvalid) {
+			if errors.Is(create_err, nutrition.ErrProductInvalid) {
+				product.Errors.Base = create_err
+			} else {
 				handler.InternalServerError(w)
 				return
-			} else {
-				product.Errors.Base = err
 			}
 		}
 	}
