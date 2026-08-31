@@ -6,23 +6,18 @@ import (
 
 	"pyra/internal/api/handler"
 	"pyra/internal/api/middleware"
-	// "pyra/internal/api/dishes"
+	"pyra/internal/api/dishes"
 	"pyra/internal/api/products"
 	"pyra/pkg/db"
 	"pyra/pkg/log"
 )
 
-func init() {
-	// handler.GlobalAddFuncs(dishes.URIHelpers)
-}
-
 func Mux(db db.DBTX, l *log.Logger) *http.ServeMux {
 	mux := http.NewServeMux()
-	Authenticated := middleware.Authenticated
 
 	// authAPI := auth.NewAPI(baseAPI)
 	productsAPI := products.NewAPI(db)
-	// dishesAPI := dishes.NewAPI(baseAPI)
+	dishesAPI := dishes.NewAPI(db)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
@@ -36,6 +31,7 @@ func Mux(db db.DBTX, l *log.Logger) *http.ServeMux {
 		}
 	})
 
+	Authenticated := middleware.Authenticated
 
 	// mux.Handle("GET /login", authAPI.SignIn())
 	// mux.Handle("GET /auth/google", authAPI.GoogleAuthorize())
@@ -51,10 +47,10 @@ func Mux(db db.DBTX, l *log.Logger) *http.ServeMux {
 	mux.Handle("DELETE /products/{uid}/{version}", Authenticated(productsAPI.Delete()))
 	mux.Handle("POST /products/search", Authenticated(productsAPI.Search()))
 
-	// mux.Handle("GET /dishes", Authenticated(dishesAPI.Index()))
-	// mux.Handle("GET /dishes/{id}", Authenticated(dishesAPI.Show()))
-	// mux.Handle("GET /dishes/new", Authenticated(dishesAPI.New()))
-	// mux.Handle("POST /dishes", Authenticated(dishesAPI.Create()))
+	mux.Handle("GET /dishes", Authenticated(dishesAPI.Index()))
+	mux.Handle("GET /dishes/{id}", Authenticated(dishesAPI.Show()))
+	mux.Handle("GET /dishes/new", Authenticated(dishesAPI.New()))
+	mux.Handle("POST /dishes", Authenticated(dishesAPI.Create()))
 
 	return mux
 }

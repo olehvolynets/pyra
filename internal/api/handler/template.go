@@ -30,7 +30,6 @@ func ExtendedTemplate(templates ...string) *template.Template {
 	return t
 }
 
-
 var TemplateHelpers = template.FuncMap{
 	"toJSON":    toJSON,
 	"inputData": inputData,

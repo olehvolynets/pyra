@@ -4,19 +4,13 @@ import (
 	"io"
 	"net/http"
 
-	"pyra/internal/api/base"
-	"pyra/pkg/nutrition"
+	"pyra/internal/api/handler"
+	// "pyra/pkg/nutrition"
 )
 
-type NewDishHandler struct {
-	*base.Handler
-	dishRepo    nutrition.DishRepository
-	productRepo nutrition.ProductRepository
-}
-
-func (h *NewDishHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func NewDish(api *API, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	l := h.RequestLogger(r)
+	l := handler.RequestLogger(r)
 
 	if err := r.ParseForm(); err != nil {
 		l.TraceContext(ctx, "failed to parse params", "error", err)

@@ -5,20 +5,13 @@ import (
 	"errors"
 	"net/http"
 
-	"pyra/internal/api/base"
-	"pyra/pkg/log"
+	"pyra/internal/api/handler"
 	"pyra/pkg/nutrition"
 )
 
-type DeleteDishHandler struct {
-	*base.Handler
-
-	DishRepo nutrition.DishRepository
-}
-
-func (h *DeleteDishHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func DeleteDish(api *API, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	log := log.FromContext(ctx)
+	log := handler.RequestLogger(r)
 
 	ref, err := dishRef(r)
 	if err != nil {
@@ -26,7 +19,7 @@ func (h *DeleteDishHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = nutrition.DeleteDish(ctx, h.DishRepo, ref)
+	err = nutrition.DeleteDish(ctx, api.DishRepo, ref)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			w.WriteHeader(http.StatusNotFound)

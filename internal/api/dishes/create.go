@@ -4,22 +4,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"pyra/internal/api/base"
+	"pyra/internal/api/handler"
 	"pyra/pkg/log"
 	"pyra/pkg/nutrition"
 )
 
-type CreateDishHandler struct {
-	*base.Handler
-
-	DishRepo       nutrition.DishRepository
-	IngredientRepo nutrition.IngredientRepository
-}
-
-func (h *CreateDishHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func CreateDish(api *API, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := log.FromContext(ctx)
-	session := h.Session(r)
+	session := handler.RequestSession(r)
 
 	if err := r.ParseForm(); err != nil {
 		session.AddFlash(fmt.Sprintf("failed to parse form: %s", err.Error()))
@@ -33,13 +26,13 @@ func (h *CreateDishHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if form.HasErrors() {
 		log.DebugContext(ctx, "create dish validation error", "error", form.Errors)
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		h.Render(w, r, "new-dish", form)
+		handler.Render(w, newDishTemplate, "new-dish", form)
 		return
 	}
 
-	if err := nutrition.CreateDish(ctx, h.DishRepo, h.IngredientRepo, &dish); err != nil {
+	if err := nutrition.CreateDish(ctx, api.DishRepo, api.IngredientRepo, &dish); err != nil {
 		log.DebugContext(ctx, "failed to save dish", "error", err)
-		h.InternalServerError(w)
+		handler.InternalServerError(w)
 		return
 	}
 

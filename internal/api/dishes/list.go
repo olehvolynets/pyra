@@ -3,25 +3,20 @@ package dishes
 import (
 	"net/http"
 
-	"pyra/internal/api/base"
+	"pyra/internal/api/handler"
 	"pyra/pkg/nutrition"
 )
 
-type ListDishesHandler struct {
-	*base.Handler
-	repo nutrition.DishRepository
-}
-
-func (h *ListDishesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func ListDishes(api *API, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	log := h.RequestLogger(r)
+	log := handler.RequestLogger(r)
 
-	dishes, err := nutrition.ListDishes(ctx, h.repo)
+	dishes, err := nutrition.ListDishes(ctx, api.DishRepo)
 	if err != nil {
 		log.ErrorContext(ctx, "failed to list dishes", "error", err)
-		h.InternalServerError(w)
+		handler.InternalServerError(w)
 		return
 	}
 
-	h.Render(w, r, "dish-list", dishes)
+	handler.Render(w, dishListTemplate, "dish-list", dishes)
 }
