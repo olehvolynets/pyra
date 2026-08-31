@@ -1,0 +1,13 @@
+{{ define "flashes" }}
+<div id="flashes">
+    {{ range .Flashes }}
+        {{ if eq .Severity 0 }}
+            <div class="flash text-gray-300"> {{ .Msg }} </div>
+        {{ else if eq .Severity 1 }}
+            <div class="flash text-orange-300"> {{ .Msg }} </div>
+        {{ else if eq .Severity 2 }}
+            <div class="flash text-red-400"> {{ .Msg }} </div>
+        {{ end }}
+    {{ end }}
+</div>
+{{ end }}

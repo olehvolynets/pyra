@@ -7,6 +7,29 @@ import (
 	"html/template"
 )
 
+type RenderContext struct {
+	Flashes []FlashMessage
+}
+
+type FlashSeverity uint32
+const (
+	FlashInfo FlashSeverity = iota
+	FlashWarning FlashSeverity = iota
+	FlashError FlashSeverity = iota
+)
+
+type FlashMessage struct {
+	Severity FlashSeverity
+	Msg string
+}
+
+func NewFlash(severity FlashSeverity, msg string) FlashMessage {
+	return FlashMessage{
+		Severity: severity,
+		Msg: msg,
+	}
+}
+
 var baseTemplate = template.New("drivers")
 
 func init() {

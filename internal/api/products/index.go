@@ -8,6 +8,8 @@ import (
 )
 
 type ListProductsRenderContext struct {
+	handler.RenderContext
+
 	Products []nutrition.Product
 	Form ProductForm
 }
@@ -23,6 +25,11 @@ func ListProducts(api *API, w http.ResponseWriter, r *http.Request) {
 	}
 
 	details := ListProductsRenderContext{
+		Flashes: []handler.FlashMessage{
+			{ Severity: handler.FlashInfo, Msg: "Info message" },
+			{ Severity: handler.FlashWarning, Msg: "Warning message" },
+			{ Severity: handler.FlashError, Msg: "Error message" },
+		},
 		Products: products,
 		Form: ProductForm{Per: "100"},
 	}

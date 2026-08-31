@@ -13,9 +13,11 @@ func CreateProduct(api *API, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := handler.RequestLogger(r)
 	session := handler.RequestSession(r)
+	flashes := make([]handler.FlashMessage, 0)
 
 	err := r.ParseForm()
 	if err != nil {
+		// FIX: use immediate flashes instead of session since there's no redirect.
 		session.AddFlash(fmt.Sprintf("failed to parse form: %s", err.Error()))
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -43,8 +45,8 @@ func CreateProduct(api *API, w http.ResponseWriter, r *http.Request) {
 	if product.HasErrors() {
 		form.SetProductErrors(product.Errors)
 
-		if product.Errors.Base != nil {
-			session.AddFlash(fmt.Sprintf("failed to create a product: %s", product.Errors.Base))
+		if form.Errors.Base != nil {
+			flashes = append(flashes, handler.NewFlash(handler.FlashError, fmt.Sprintf("failed to create a product: %s", form.Errors.Base)))
 		}
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
@@ -60,6 +62,7 @@ func CreateProduct(api *API, w http.ResponseWriter, r *http.Request) {
 	}
 
 	details := ListProductsRenderContext{
+		Flashes:  flashes,
 		Products: products,
 		Form:     form,
 	}

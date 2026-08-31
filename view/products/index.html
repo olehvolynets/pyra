@@ -9,6 +9,8 @@
     </div>
 </header>
 
+{{ template "flashes" . }}
+
 {{ with .Form }}
 <section class="my-8">
 	<form action="/products" method="POST">
