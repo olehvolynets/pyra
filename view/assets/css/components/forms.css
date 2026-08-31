@@ -6,10 +6,16 @@
     .error {
         @apply text-red-300;
     }
+
+    @apply w-24;
+
+    input {
+        width: 100%;
+    }
 }
 
 input[type="text"], input[type="number"], input[type="email"],
 input[type="password"], input[type="phone"], input[type="address"],
 input[type="search"] {
-    @apply rounded-md py-2 px-4 bg-stone-700 border-stone-500;
+    @apply rounded-md py-2 px-2 bg-stone-700 border-stone-500;
 }

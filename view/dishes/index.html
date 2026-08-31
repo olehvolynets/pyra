@@ -36,10 +36,10 @@
                             {{ .Name }}
                         </a>
                     </td>
-                    <td>{{ compactFloat .Calories }}</td>
-                    <td>{{ compactFloat .Proteins }}</td>
-                    <td>{{ compactFloat .Fats }}</td>
-                    <td>{{ compactFloat .Carbs }}</td>
+                    <td>{{ .Calories }}</td>
+                    <td>{{ .Proteins }}</td>
+                    <td>{{ .Fats }}</td>
+                    <td>{{ .Carbs }}</td>
                 </tr>
             {{ else }}
                 <tr>

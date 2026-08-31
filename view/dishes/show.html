@@ -33,10 +33,10 @@
             <tr>
                 <td>Total</td>
                 <td>0</td>
-                <td>{{ compactFloat .Dish.Calories }}</td>
-                <td>{{ compactFloat .Dish.Proteins }}</td>
-                <td>{{ compactFloat .Dish.Fats }}</td>
-                <td>{{ compactFloat .Dish.Carbs }}</td>
+                <td>{{ .Dish.Calories }}</td>
+                <td>{{ .Dish.Proteins }}</td>
+                <td>{{ .Dish.Fats }}</td>
+                <td>{{ .Dish.Carbs }}</td>
             </tr>
         </tbody>
 
@@ -49,10 +49,10 @@
                         </a>
                     </td>
                     <td>0</td>
-                    <td>{{ compactFloat .Calories }}</td>
-                    <td>{{ compactFloat .Proteins }}</td>
-                    <td>{{ compactFloat .Fats }}</td>
-                    <td>{{ compactFloat .Carbs }}</td>
+                    <td>{{ .Calories }}</td>
+                    <td>{{ .Proteins }}</td>
+                    <td>{{ .Fats }}</td>
+                    <td>{{ .Carbs }}</td>
                 </tr>
             {{ end }}
         </tbody>
@@ -91,10 +91,10 @@
                         {{ end }}
                     </td>
                     <td>{{ .Version }}</td>
-                    <td>{{ compactFloat .Calories }}</td>
-                    <td>{{ compactFloat .Proteins }}</td>
-                    <td>{{ compactFloat .Fats }}</td>
-                    <td>{{ compactFloat .Carbs }}</td>
+                    <td>{{ .Calories }}</td>
+                    <td>{{ .Proteins }}</td>
+                    <td>{{ .Fats }}</td>
+                    <td>{{ .Carbs }}</td>
                 </tr>
             {{ end }}
         </tbody>

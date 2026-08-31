@@ -40,7 +40,6 @@ func Mux(db db.DBTX, l *log.Logger) *http.ServeMux {
 
 	mux.Handle("GET /products", Authenticated(productsAPI.List()))
 	mux.Handle("GET /products/{uid}/{version}", Authenticated(productsAPI.Show()))
-	mux.Handle("GET /products/new", Authenticated(productsAPI.New()))
 	mux.Handle("GET /products/{uid}/{version}/edit", Authenticated(productsAPI.Edit()))
 	mux.Handle("POST /products", Authenticated(productsAPI.Create()))
 	mux.Handle("PUT /products/{uid}/{version}", Authenticated(productsAPI.Update()))

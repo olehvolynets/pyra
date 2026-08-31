@@ -26,27 +26,43 @@ func CreateProduct(api *API, w http.ResponseWriter, r *http.Request) {
 
 	if form.HasErrors() {
 		log.DebugContext(ctx, "create product validation error", "error", form.Errors)
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		handler.Render(w, newProductTemplate, "new-product", form)
-		return
-	}
+	} else {
+		err = nutrition.CreateProduct(ctx, api.ProductRepo, &product)
+		if err != nil {
+			log.DebugContext(ctx, "failed to save product", "error", err)
 
-	err = nutrition.CreateProduct(ctx, api.ProductRepo, &product)
-	if err != nil && !errors.Is(err, nutrition.ErrProductInvalid) {
-		log.DebugContext(ctx, "failed to save product", "error", err)
-		handler.InternalServerError(w)
-		return
+			if !errors.Is(err, nutrition.ErrProductInvalid) {
+				handler.InternalServerError(w)
+				return
+			} else {
+				product.Errors.Base = err
+			}
+		}
 	}
 
 	if product.HasErrors() {
 		form.SetProductErrors(product.Errors)
-		session.AddFlash("failed to create a product")
+
+		if product.Errors.Base != nil {
+			session.AddFlash(fmt.Sprintf("failed to create a product: %s", product.Errors.Base))
+		}
+
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		handler.Render(w, newProductTemplate, "new-product", form)
+	} else {
+		form = ProductForm{Per: "100"}
+	}
+
+	products, err := nutrition.ListProducts(r.Context(), api.ProductRepo)
+	if err != nil {
+		log.Error("failed to list produces", "error", err)
+		handler.InternalServerError(w)
 		return
 	}
 
-	http.Redirect(w, r,
-		fmt.Sprintf("/products/%s/%d", product.UID, product.Version),
-		http.StatusFound)
+	details := ListProductsRenderContext{
+		Products: products,
+		Form:     form,
+	}
+
+	handler.Render(w, productListTemplate, "product-list", details)
 }

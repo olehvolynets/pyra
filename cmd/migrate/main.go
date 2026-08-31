@@ -16,7 +16,7 @@ func main() {
 	slog.SetLogLoggerLevel(slog.LevelDebug)
 
 	// FIX: load depending on env
-	if err := godotenv.Load("/Users/sagg0t/devel/pyra/.env.test"); err != nil {
+	if err := godotenv.Load("/Users/sagg0t/devel/pyra/.env"); err != nil {
 		panic(err)
 	}
 	config := migrate.NewConfig()

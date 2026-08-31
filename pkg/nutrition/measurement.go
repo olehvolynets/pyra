@@ -50,7 +50,7 @@ func NewMeasurement(f float64) Measurement {
 func (m Measurement) String() string {
 	asFloat := m.Float()
 
-	if asFloat-math.Trunc(asFloat) == 0 {
+	if asFloat == math.Trunc(asFloat) {
 		return strconv.FormatInt(int64(asFloat), 10)
 	}
 

@@ -7,6 +7,11 @@ import (
 	"pyra/pkg/nutrition"
 )
 
+type ListProductsRenderContext struct {
+	Products []nutrition.Product
+	Form ProductForm
+}
+
 func ListProducts(api *API, w http.ResponseWriter, r *http.Request) {
 	log := handler.RequestLogger(r)
 
@@ -17,5 +22,10 @@ func ListProducts(api *API, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.Render(w, productListTemplate, "product-list", products)
+	details := ListProductsRenderContext{
+		Products: products,
+		Form: ProductForm{Per: "100"},
+	}
+
+	handler.Render(w, productListTemplate, "product-list", details)
 }

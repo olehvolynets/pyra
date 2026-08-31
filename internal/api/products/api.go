@@ -49,10 +49,6 @@ func (productApi *API) Show() http.Handler {
 	return handler.New(productApi, ShowProduct)
 }
 
-func (productApi *API) New() http.Handler {
-	return handler.New(productApi, NewProduct)
-}
-
 func (productApi *API) Create() http.Handler {
 	return handler.New(productApi, CreateProduct)
 }

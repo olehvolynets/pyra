@@ -1,9 +1,7 @@
 {{ define "input" }}
-	<div class="form-control">
+<div class="form-control {{ if .Class }}{{ .Class}}{{ end }}">
         {{ if and .Label }}
-		<label
-            {{ if .Name }}for="{{ .Name }}"{{ end }}
-            >
+		<label {{ if .Name }}for="{{ .Name }}"{{ end }}>
             {{ .Label }}
         </label>
         {{ end }}

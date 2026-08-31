@@ -52,6 +52,8 @@ type ProductRef struct {
 }
 
 type ProductErrors struct {
+	Base	error
+
 	UID     error
 	Version error
 
@@ -61,7 +63,8 @@ type ProductErrors struct {
 }
 
 func (e *ProductErrors) HasErrors() bool {
-	return e.UID != nil ||
+	return e.Base != nil ||
+		e.UID != nil ||
 		e.Version != nil ||
 		e.Name != nil ||
 		e.MacroErrors.HasErrors()

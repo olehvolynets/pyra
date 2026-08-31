@@ -6,14 +6,80 @@
 <header id="main-header">
     <div class="flex justify-between">
         <h1>Products</h1>
-
-        <a href="/products/new">
-            <button type="button" class="btn-primary">
-                Add
-            </button>
-        </a>
     </div>
 </header>
+
+{{ with .Form }}
+<section class="my-8">
+	<form action="/products" method="POST">
+		<div class="flex items-start gap-2">
+            {{ template "input" inputData
+                "Type" "text"
+                "Name" "name"
+                "Label" "Name"
+                "Value" .Name
+                "ID" "name"
+                "Class" "w-64"
+                "Required" true
+                "Error" (.Errors.Name) }}
+
+            {{ template "input" inputData
+                "Name" "calories"
+                "Type" "number"
+                "Label" "Calories"
+                "Value" .Calories
+                "ID" "calories"
+                "Placeholder" "0"
+                "Required" true
+                "Error" .Errors.Calories }}
+
+            {{ template "input" inputData
+                "Name" "per"
+                "Type" "number"
+                "Label" "Per"
+                "Value" .Per
+                "ID" "per"
+                "Placeholder" "100"
+                "Required" true
+                "Error" .Errors.Per }}
+
+            {{ template "input" inputData
+                "Name" "proteins"
+                "Type" "number"
+                "Label" "Proteins"
+                "Value" .Proteins
+                "ID" "proteins"
+                "Placeholder" "0"
+                "Required" true
+                "Error" .Errors.Proteins }}
+
+            {{ template "input" inputData
+                "Name" "fats"
+                "Type" "number"
+                "Label" "Fats"
+                "Value" .Fats
+                "ID" "fats"
+                "Placeholder" "0"
+                "Required" true
+                "Error" .Errors.Fats }}
+
+            {{ template "input" inputData
+                "Name" "carbs"
+                "Type" "number"
+                "Label" "Carbs"
+                "Value" .Carbs
+                "ID" "carbs"
+                "Placeholder" "0"
+                "Required" true
+                "Error" .Errors.Carbs }}
+
+			<button type="submit" class="ml-4 btn-primary self-end">
+				ADD
+			</button>
+		</div>
+	</form>
+</section>
+{{ end }}
 
 <table id="product-list">
     <thead>
@@ -28,7 +94,7 @@
     </thead>
 
     <tbody hx-confirm="Are you sure?" hx-target="closest tr" hx-swap="outerHTML">
-        {{ range . }}
+        {{ range .Products }}
             <tr>
                 <td>
                     <a href="{{ productURI . }}" class="link-primary">
