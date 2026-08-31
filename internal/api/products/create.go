@@ -5,19 +5,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"pyra/internal/api/base"
+	"pyra/internal/api/handler"
 	"pyra/pkg/nutrition"
 )
 
-type CreateProductHandler struct {
-	*base.Handler
-	productRepo nutrition.ProductRepository
-}
-
-func (h *CreateProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func CreateProduct(api *API, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	log := h.RequestLogger(r)
-	session := h.Session(r)
+	log := handler.RequestLogger(r)
+	session := handler.RequestSession(r)
 
 	err := r.ParseForm()
 	if err != nil {
@@ -32,14 +27,14 @@ func (h *CreateProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	if form.HasErrors() {
 		log.DebugContext(ctx, "create product validation error", "error", form.Errors)
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		h.Render(w, r, "new-product", form)
+		handler.Render(w, newProductTemplate, "new-product", form)
 		return
 	}
 
-	err = nutrition.CreateProduct(ctx, h.productRepo, &product)
+	err = nutrition.CreateProduct(ctx, api.ProductRepo, &product)
 	if err != nil && !errors.Is(err, nutrition.ErrProductInvalid) {
 		log.DebugContext(ctx, "failed to save product", "error", err)
-		h.InternalServerError(w)
+		handler.InternalServerError(w)
 		return
 	}
 
@@ -47,7 +42,7 @@ func (h *CreateProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		form.SetProductErrors(product.Errors)
 		session.AddFlash("failed to create a product")
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		h.Render(w, r, "new-product", form)
+		handler.Render(w, newProductTemplate, "new-product", form)
 		return
 	}
 

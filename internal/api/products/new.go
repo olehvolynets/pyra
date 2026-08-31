@@ -3,15 +3,11 @@ package products
 import (
 	"net/http"
 
-	"pyra/internal/api/base"
+	"pyra/internal/api/handler"
 )
 
-type NewProductHandler struct {
-	*base.Handler
-}
-
-func (h *NewProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func NewProduct(api *API, w http.ResponseWriter, r *http.Request) {
 	form := ProductForm{Per: "100"}
 
-	h.Render(w, r, "new-product", form)
+	handler.Render(w, newProductTemplate, "new-product", form)
 }

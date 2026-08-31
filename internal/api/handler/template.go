@@ -1,4 +1,4 @@
-package base
+package handler
 
 import (
 	"encoding/json"
@@ -6,6 +6,30 @@ import (
 	"fmt"
 	"html/template"
 )
+
+var baseTemplate = template.New("drivers")
+
+func init() {
+	baseTemplate.Funcs(TemplateHelpers)
+
+	template.Must(baseTemplate.ParseGlob("view/layout/*.html"))
+	template.Must(baseTemplate.ParseGlob("view/errors/*.html"))
+	template.Must(baseTemplate.ParseGlob("view/components/*.html"))
+}
+
+func GlobalAddFuncs(fms ...template.FuncMap) {
+	for _, fm := range fms {
+		baseTemplate.Funcs(fm)
+	}
+}
+
+func ExtendedTemplate(templates ...string) *template.Template {
+	t := template.Must(baseTemplate.Clone())
+	_ = template.Must(t.ParseFiles(templates...))
+
+	return t
+}
+
 
 var TemplateHelpers = template.FuncMap{
 	"toJSON":    toJSON,

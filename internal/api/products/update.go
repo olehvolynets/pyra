@@ -6,20 +6,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"pyra/internal/api/base"
+	"pyra/internal/api/handler"
 	"pyra/pkg/nutrition"
 )
 
-type UpdateProductHandler struct {
-	*base.Handler
-	ProductRepo nutrition.ProductRepository
-	DishRepo    nutrition.DishRepository
-}
-
-func (h *UpdateProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func UpdateProduct(api *API, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	log := h.RequestLogger(r)
-	session := h.Session(r)
+	log := handler.RequestLogger(r)
+	session := handler.RequestSession(r)
 
 	ref, err := productRef(r)
 	if err != nil {
@@ -34,27 +28,27 @@ func (h *UpdateProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	if form.HasErrors() {
 		log.DebugContext(ctx, "update product form error", "error", form.Errors.Error())
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		h.Render(w, r, "edit-product", form)
+		handler.Render(w, editProductTemplate, "edit-product", form)
 		return
 	}
 
 	product.ProductRef = ref
 
-	err = nutrition.UpdateProduct(r.Context(), h.ProductRepo, &product)
+	err = nutrition.UpdateProduct(r.Context(), api.ProductRepo, &product)
 	if err != nil {
 		errMsg := fmt.Sprintf("couldn't update the product: %s", err.Error())
 		log.DebugContext(ctx, errMsg)
 
 		if errors.Is(err, sql.ErrNoRows) {
 			log.TraceContext(ctx, "product not found", "error", err)
-			h.NotFound(w, r)
+			handler.NotFound(w, editProductTemplate)
 			return
 		}
 
 		// TODO: handle different kinds of errors since lost DB connection should result in 500.
 		session.AddFlash(errMsg)
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		h.Render(w, r, "edit-product", form)
+		handler.Render(w, editProductTemplate, "edit-product", form)
 		return
 	}
 

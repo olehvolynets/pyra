@@ -1,11 +1,6 @@
-package base
+package middleware
 
-import (
-	"net/http"
-
-	"pyra/pkg/log"
-	"pyra/pkg/session"
-)
+import "net/http"
 
 func Authenticated(next http.Handler) http.Handler {
 	return next
@@ -22,18 +17,4 @@ func Authenticated(next http.Handler) http.Handler {
 	// 		http.Redirect(w, r, "/signIn", http.StatusFound)
 	// 	}
 	// })
-}
-
-func IsAuthenticated(r *http.Request) bool {
-	return true
-	log := log.FromContext(r.Context())
-	s := session.FromContext(r.Context())
-
-	userId, ok := s.Values[UserIDSessionKey]
-
-	if ok {
-		log.Debug("USER_ID", "id", userId.(uint64))
-	}
-
-	return ok
 }

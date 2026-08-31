@@ -3,24 +3,19 @@ package products
 import (
 	"net/http"
 
-	"pyra/internal/api/base"
+	"pyra/internal/api/handler"
 	"pyra/pkg/nutrition"
 )
 
-type ProductsHandler struct {
-	*base.Handler
-	ProductRepo nutrition.ProductRepository
-}
+func ListProducts(api *API, w http.ResponseWriter, r *http.Request) {
+	log := handler.RequestLogger(r)
 
-func (h *ProductsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log := h.RequestLogger(r)
-
-	products, err := nutrition.ListProducts(r.Context(), h.ProductRepo)
+	products, err := nutrition.ListProducts(r.Context(), api.ProductRepo)
 	if err != nil {
 		log.Error("failed to list produces", "error", err)
-		h.InternalServerError(w)
+		handler.InternalServerError(w)
 		return
 	}
 
-	h.Render(w, r, "product-list", products)
+	handler.Render(w, productListTemplate, "product-list", products)
 }

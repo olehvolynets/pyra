@@ -5,21 +5,20 @@ import (
 	"errors"
 	"net/http"
 
-	"pyra/internal/api/base"
+	"pyra/internal/api/handler"
 	"pyra/pkg/nutrition"
 )
 
-type ProductHandler struct {
-	*base.Handler
-
-	productRepo nutrition.ProductRepository
-	dishRepo    nutrition.DishRepository
+type ProductDetails struct {
+	Product      nutrition.Product
+	Versions     []nutrition.Product
+	UsedInDishes []nutrition.Dish
 }
 
 // GET /products/:uid/:version
-func (h *ProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func ShowProduct(api *API, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	log := h.RequestLogger(r)
+	log := handler.RequestLogger(r)
 
 	ref, err := productRef(r)
 	if err != nil {
@@ -28,7 +27,7 @@ func (h *ProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product, err := h.productRepo.FindByRef(ctx, ref)
+	product, err := api.ProductRepo.FindByRef(ctx, ref)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.NotFound(w, r)
@@ -36,21 +35,21 @@ func (h *ProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.ErrorContext(ctx, "failed to retrieve a record", "error", err)
-		h.InternalServerError(w)
+		handler.InternalServerError(w)
 		return
 	}
 
-	versions, err := h.productRepo.Versions(ctx, product.UID)
+	versions, err := api.ProductRepo.Versions(ctx, product.UID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.ErrorContext(ctx, "failed to retrieve a record", "error", err)
-		h.InternalServerError(w)
+		handler.InternalServerError(w)
 		return
 	}
 
-	usedInDishes, err := h.dishRepo.FindAllByProductRef(ctx, product.ProductRef)
+	usedInDishes, err := api.DishRepo.FindAllByProductRef(ctx, product.ProductRef)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.ErrorContext(ctx, "failed to retrieve a record", "error", err)
-		h.InternalServerError(w)
+		handler.InternalServerError(w)
 		return
 	}
 
@@ -60,11 +59,5 @@ func (h *ProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		UsedInDishes: usedInDishes,
 	}
 
-	h.Render(w, r, "product-details", details)
-}
-
-type ProductDetails struct {
-	Product      nutrition.Product
-	Versions     []nutrition.Product
-	UsedInDishes []nutrition.Dish
+	handler.Render(w, productTemplate, "product-details", details)
 }

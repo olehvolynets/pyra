@@ -5,18 +5,12 @@ import (
 	"errors"
 	"net/http"
 
-	"pyra/internal/api/base"
-	"pyra/pkg/nutrition"
+	"pyra/internal/api/handler"
 )
 
-type DeleteProductHandler struct {
-	*base.Handler
-	ProductRepo nutrition.ProductRepository
-}
-
-func (h *DeleteProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func DeleteProduct(api *API, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	log := h.RequestLogger(r)
+	log := handler.RequestLogger(r)
 
 	ref, err := productRef(r)
 	if err != nil {
@@ -25,7 +19,7 @@ func (h *DeleteProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	// FIX: no need, handle NotFound in deletion
-	_, err = h.ProductRepo.FindByRef(ctx, ref)
+	_, err = api.ProductRepo.FindByRef(ctx, ref)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.NotFound(w, r)
@@ -33,11 +27,11 @@ func (h *DeleteProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		}
 
 		log.ErrorContext(ctx, "failed to find product", "error", err)
-		h.InternalServerError(w)
+		handler.InternalServerError(w)
 		return
 	}
 
-	err = h.ProductRepo.Delete(ctx, ref)
+	err = api.ProductRepo.Delete(ctx, ref)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.NotFound(w, r)
@@ -45,7 +39,7 @@ func (h *DeleteProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		}
 
 		log.ErrorContext(ctx, "failed to delete product", "error", err)
-		h.InternalServerError(w)
+		handler.InternalServerError(w)
 		return
 	}
 

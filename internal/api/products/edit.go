@@ -4,19 +4,12 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-
-	"pyra/internal/api/base"
-	"pyra/pkg/nutrition"
+	"pyra/internal/api/handler"
 )
 
-type EditProductHandler struct {
-	*base.Handler
-	productRepo nutrition.ProductRepository
-}
-
-func (h *EditProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func EditProduct(api *API, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	log := h.RequestLogger(r)
+	log := handler.RequestLogger(r)
 
 	ref, err := productRef(r)
 	if err != nil {
@@ -25,20 +18,20 @@ func (h *EditProductHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product, err := h.productRepo.FindByRef(ctx, ref)
+	product, err := api.ProductRepo.FindByRef(ctx, ref)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			log.DebugContext(ctx, "product not found", "uid", ref.UID, "version", ref.Version)
-			h.NotFound(w, r)
+			handler.NotFound(w, editProductTemplate)
 			return
 		}
 
 		log.ErrorContext(ctx, "failed to retrieve a record", "error", err)
-		h.InternalServerError(w)
+		handler.InternalServerError(w)
 		return
 	}
 
 	form := FormFromProduct(product)
 
-	h.Render(w, r, "edit-product", form)
+	handler.Render(w, editProductTemplate, "edit-product", form)
 }

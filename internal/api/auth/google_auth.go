@@ -8,7 +8,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
-	"pyra/internal/api/base"
+	"pyra/internal/api"
 )
 
 var googleConfig = &oauth2.Config{
@@ -24,7 +24,7 @@ var googleConfig = &oauth2.Config{
 }
 
 type GoogleAuthHandler struct {
-	*base.Handler
+	*api.Handler
 }
 
 func (h *GoogleAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

@@ -4,55 +4,57 @@ package api
 import (
 	"net/http"
 
-	"pyra/internal/api/base"
-	"pyra/internal/api/dishes"
+	"pyra/internal/api/handler"
+	"pyra/internal/api/middleware"
+	// "pyra/internal/api/dishes"
 	"pyra/internal/api/products"
 	"pyra/pkg/db"
 	"pyra/pkg/log"
 )
 
+func init() {
+	// handler.GlobalAddFuncs(dishes.URIHelpers)
+}
+
 func Mux(db db.DBTX, l *log.Logger) *http.ServeMux {
 	mux := http.NewServeMux()
-	drivers := base.Drivers()
+	Authenticated := middleware.Authenticated
 
-	drivers.Funcs(products.URIHelpers)
-	drivers.Funcs(dishes.URIHelpers)
-
-	baseAPI := base.NewAPI(db, drivers)
 	// authAPI := auth.NewAPI(baseAPI)
-	productsAPI := products.NewAPI(baseAPI)
-	dishesAPI := dishes.NewAPI(baseAPI)
+	productsAPI := products.NewAPI(db)
+	// dishesAPI := dishes.NewAPI(baseAPI)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
-			if base.IsAuthenticated(r) {
+			if handler.IsAuthenticated(r) {
 				http.Redirect(w, r, "/products", http.StatusSeeOther)
 			} else {
-				http.Redirect(w, r, "/signIn", http.StatusTemporaryRedirect)
+				http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 			}
 		} else {
 			http.NotFound(w, r)
 		}
 	})
 
-	// mux.Handle("GET /signIn", authAPI.SignIn())
+
+	// mux.Handle("GET /login", authAPI.SignIn())
 	// mux.Handle("GET /auth/google", authAPI.GoogleAuthorize())
 	// mux.Handle("GET /auth/google/callback", authAPI.GoogleCallback())
-	// mux.Handle("GET /signOut", base.Authenticated(authAPI.SignOut()))
+	// mux.Handle("GET /logout", Authenticated(authAPI.SignOut()))
 
-	mux.Handle("GET /products", base.Authenticated(productsAPI.Index()))
-	mux.Handle("GET /products/{uid}/{version}", base.Authenticated(productsAPI.Show()))
-	mux.Handle("GET /products/new", base.Authenticated(productsAPI.New()))
-	mux.Handle("GET /products/{uid}/{version}/edit", base.Authenticated(productsAPI.Edit()))
-	mux.Handle("POST /products", base.Authenticated(productsAPI.Create()))
-	mux.Handle("PUT /products/{uid}/{version}", base.Authenticated(productsAPI.Update()))
-	mux.Handle("DELETE /products/{uid}/{version}", base.Authenticated(productsAPI.Delete()))
-	mux.Handle("POST /products/search", productsAPI.Search()) // TODO: authenticate
+	mux.Handle("GET /products", Authenticated(productsAPI.List()))
+	mux.Handle("GET /products/{uid}/{version}", Authenticated(productsAPI.Show()))
+	mux.Handle("GET /products/new", Authenticated(productsAPI.New()))
+	mux.Handle("GET /products/{uid}/{version}/edit", Authenticated(productsAPI.Edit()))
+	mux.Handle("POST /products", Authenticated(productsAPI.Create()))
+	mux.Handle("PUT /products/{uid}/{version}", Authenticated(productsAPI.Update()))
+	mux.Handle("DELETE /products/{uid}/{version}", Authenticated(productsAPI.Delete()))
+	mux.Handle("POST /products/search", Authenticated(productsAPI.Search()))
 
-	mux.Handle("GET /dishes", base.Authenticated(dishesAPI.Index()))
-	// mux.Handle("GET /dishes/{id}", base.Authenticated(dishesAPI.Show()))
-	// mux.Handle("GET /dishes/new", base.Authenticated(dishesAPI.New()))
-	// mux.Handle("POST /dishes", base.Authenticated(dishesAPI.Create()))
+	// mux.Handle("GET /dishes", Authenticated(dishesAPI.Index()))
+	// mux.Handle("GET /dishes/{id}", Authenticated(dishesAPI.Show()))
+	// mux.Handle("GET /dishes/new", Authenticated(dishesAPI.New()))
+	// mux.Handle("POST /dishes", Authenticated(dishesAPI.Create()))
 
 	return mux
 }

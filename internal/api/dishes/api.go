@@ -20,11 +20,7 @@ func NewAPI(api *base.API) *API {
 }
 
 func (api *API) Index() http.Handler {
-	baseHandler := api.NewHandler()
-	err := baseHandler.ExpandTemplate("view/dishes/index.html")
-	if err != nil {
-		panic(err)
-	}
+	baseHandler := api.NewHandler("view/dishes/index.html")
 
 	return &ListDishesHandler{
 		Handler: baseHandler,
@@ -33,11 +29,7 @@ func (api *API) Index() http.Handler {
 }
 
 func (api *API) Show() http.Handler {
-	baseHandler := api.NewHandler()
-	err := baseHandler.ExpandTemplate("view/dishes/show.html")
-	if err != nil {
-		panic(err)
-	}
+	baseHandler := api.NewHandler("view/dishes/show.html")
 
 	return &ShowDishHandler{
 		Handler:     baseHandler,
@@ -47,11 +39,7 @@ func (api *API) Show() http.Handler {
 }
 
 func (api *API) New() http.Handler {
-	baseHandler := api.NewHandler()
-	err := baseHandler.ExpandTemplate("view/dishes/new.html")
-	if err != nil {
-		panic(err)
-	}
+	baseHandler := api.NewHandler("view/dishes/new.html")
 
 	return &NewDishHandler{
 		Handler: baseHandler,
@@ -59,11 +47,7 @@ func (api *API) New() http.Handler {
 }
 
 func (api *API) Create() http.Handler {
-	baseHandler := api.NewHandler()
-	err := baseHandler.ExpandTemplate("view/dishes/new.html")
-	if err != nil {
-		panic(err)
-	}
+	baseHandler := api.NewHandler("view/dishes/new.html")
 
 	return &CreateDishHandler{
 		Handler: baseHandler,

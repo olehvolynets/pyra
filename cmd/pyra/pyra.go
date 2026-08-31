@@ -10,11 +10,12 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
-	"pyra/internal/api"
 	"pyra/pkg/db"
 	"pyra/pkg/log"
 	"pyra/pkg/server"
 	"pyra/pkg/session"
+
+	"pyra/internal/api"
 )
 
 func main() {

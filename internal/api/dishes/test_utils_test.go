@@ -8,7 +8,7 @@ import (
 )
 
 func NewTestDishAPI(db db.DBTX, fms ...template.FuncMap) *API {
-	drivers := base.Drivers(URIHelpers)
+	drivers := base.NewTemplate(URIHelpers)
 	baseAPI := base.NewAPI(db, drivers)
 
 	return NewAPI(baseAPI)

@@ -26,11 +26,7 @@ func NewAPI(api *base.API) *API {
 }
 
 func (api *API) SignIn() http.Handler {
-	baseHandler := api.NewHandler()
-	err := baseHandler.ExpandTemplate("view/auth/sign_in.html")
-	if err != nil {
-		panic(err)
-	}
+	baseHandler := api.NewHandler("view/auth/sign_in.html")
 
 	return &SignInHandler{
 		Handler: baseHandler,
