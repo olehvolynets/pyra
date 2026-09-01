@@ -8,23 +8,23 @@
     "build:css:mini": "bun run build:css --minify"
   },
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
-    "@tailwindcss/postcss": "^4.1.6",
-    "@tailwindcss/typography": "^0.5.13",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@tailwindcss/typography": "^0.5.20",
     "@types/bun": "latest",
-    "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.38",
-    "postcss-cli": "^11.0.0",
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.26",
+    "postcss-cli": "^11.0.1",
     "postcss-flexbugs-fixes": "^5.0.2",
-    "tailwindcss": "^4.1.6"
+    "tailwindcss": "^4.3.3"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "@github/mini-throttle": "^2.1.1",
     "@hotwired/stimulus": "^3.2.2",
-    "htmx.org": "2"
+    "htmx.org": "^4.0.0"
   }
 }
