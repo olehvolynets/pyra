@@ -7,7 +7,7 @@ import (
 
 	"pyra/pkg/db"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 var (

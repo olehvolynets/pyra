@@ -6,11 +6,10 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"uuid"
 
 	"pyra/pkg/db"
 	"pyra/pkg/nutrition"
-
-	"github.com/google/uuid"
 )
 
 func seedProducts(conn db.DBTX) error {
@@ -37,7 +36,7 @@ func seedProducts(conn db.DBTX) error {
 			panic(err)
 		}
 
-		uid, _ := uuid.NewUUID()
+		uid := uuid.New()
 
 		calories, err := strconv.ParseFloat(csvRecord[2], 32)
 		if err != nil {

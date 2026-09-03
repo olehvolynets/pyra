@@ -3,10 +3,9 @@ package nutrition
 import (
 	"context"
 	"errors"
+	"uuid"
 
 	"pyra/pkg/db"
-
-	"github.com/google/uuid"
 )
 
 var (

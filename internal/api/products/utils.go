@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"uuid"
 
 	"pyra/pkg/nutrition"
-
-	"github.com/google/uuid"
 )
 
 var ErrNotNumber = errors.New("must be a number")

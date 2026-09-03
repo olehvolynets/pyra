@@ -3,8 +3,8 @@ package auth
 import (
 	"net/http"
 	"os"
+	"uuid"
 
-	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 

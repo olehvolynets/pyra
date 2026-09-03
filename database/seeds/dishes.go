@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand/v2"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"pyra/pkg/db"
 	"pyra/pkg/nutrition"
@@ -18,7 +17,7 @@ func seedDishes(conn db.DBTX) error {
 	dishes := make([]nutrition.Dish, 0, 10)
 
 	for i := 0; i < 10; i += 1 {
-		uid, _ := uuid.NewUUID()
+		uid := uuid.New()
 
 		dish := nutrition.Dish{
 			Name:    nutrition.DishName(fmt.Sprintf("Dish #%d", i)),

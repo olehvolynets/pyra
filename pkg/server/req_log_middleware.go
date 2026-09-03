@@ -5,8 +5,7 @@ import (
 	"slices"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"pyra/pkg/log"
 )
