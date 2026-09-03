@@ -14,8 +14,8 @@ type RenderContext struct {
 type FlashSeverity uint32
 const (
 	FlashInfo FlashSeverity = iota
-	FlashWarning FlashSeverity = iota
-	FlashError FlashSeverity = iota
+	FlashWarning
+	FlashError
 )
 
 type FlashMessage struct {

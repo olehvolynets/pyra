@@ -27,7 +27,6 @@ func init() {
 	handler.GlobalAddFuncs(URIHelpers)
 	productListTemplate = handler.ExtendedTemplate("view/products/index.html")
 	productTemplate = handler.ExtendedTemplate("view/products/show.html")
-	newProductTemplate = handler.ExtendedTemplate("view/products/new.html")
 	editProductTemplate = handler.ExtendedTemplate("view/products/edit.html")
 }
 
