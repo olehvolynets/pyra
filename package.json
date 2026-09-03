@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "bun bun.config.js",
-    "build:css": "postcss ./view/assets/css/main.css -o ./public/assets/pyra.css --verbose",
+    "build": "vite build --watch",
+    "build:css": "postcss ./view/css/main.css -o ./public/assets/pyra.css --verbose",
     "build:css:mini": "bun run build:css --minify"
   },
   "devDependencies": {
@@ -17,14 +17,17 @@
     "postcss": "^8.5.26",
     "postcss-cli": "^11.0.1",
     "postcss-flexbugs-fixes": "^5.0.2",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.2.2"
   },
   "peerDependencies": {
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3"
   },
   "dependencies": {
     "@github/mini-throttle": "^2.1.1",
     "@hotwired/stimulus": "^3.2.2",
-    "htmx.org": "^4.0.0"
+    "@tailwindcss/vite": "^4.3.3",
+    "htmx.org": "^4.0.0",
+    "open-props": "^1.7.23"
   }
 }

@@ -1,0 +1,11 @@
+.link-primary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--teal-6);
+}
+
+.link-secondary {
+    cursor: pointer;
+    font-weight: 400;
+    color: var(--yellow-3);
+}

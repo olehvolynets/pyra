@@ -2,7 +2,7 @@ import htmx from "htmx.org/dist/htmx.esm";
 import { Application } from "@hotwired/stimulus";
 import { ProductRowController } from "./controllers/product_row_controller";
 import { SearchBarController } from "./controllers/search_bar_controller";
-import { DishFormController } from "./controllers/search_bar_controller";
+import { DishFormController } from "./controllers/dish_form_controller";
 
 window.htmx = htmx;
 // htmx.logAll();

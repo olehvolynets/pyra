@@ -1,6 +1,5 @@
 @import "tailwindcss";
-
-@plugin "@tailwindcss/forms";
+@import "open-props/style";
 
 @import "./components/buttons.css" layer(base);
 @import "./components/links.css" layer(base);
@@ -25,7 +24,7 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+    border-color: var(--gray-2, currentcolor);
   }
 }
 
@@ -33,8 +32,8 @@ body {
     position: relative;
     width: 100vw;
     height: 100vh;
-
-    @apply bg-stone-800 text-zinc-200;
+    color: var(--sand-1);
+    background-color: var(--stone-11);
 }
 
 #page-frame {
@@ -51,12 +50,14 @@ body {
 #main-content {
     flex: 1;
     overflow-y: scroll;
-
-    @apply px-20 py-8;
+    padding: var(--size-7) var(--size-10);
 }
 
 section {
     h3.section-header {
-        @apply text-xl font-semibold;
+        font-size: var(--size-4);
+        font-weight: var(--font-weight-6);
     }
 }
+
+.hidden { display: none; }

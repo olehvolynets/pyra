@@ -1,0 +1,23 @@
+.search-bar {
+    position: relative;
+    display: block;
+
+    .search-bar__input {
+        width: 100%;
+    }
+
+    .search-bar__options {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        top: 100%;
+        left: 0;
+        background-color: var(--gray-0);
+        color: var(--gray-12);
+
+        > * {
+            padding: 0.25rem 0.75rem;
+        }
+    }
+}
