@@ -50,7 +50,8 @@ body {
 #main-content {
     flex: 1;
     overflow-y: scroll;
-    padding: var(--size-7) var(--size-10);
+    padding-inline: var(--size-10);
+    padding-block: var(--size-7);
 }
 
 section {

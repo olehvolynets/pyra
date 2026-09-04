@@ -3,7 +3,8 @@
 
     td, th {
         text-align: center;
-        padding: 0.5rem 0.25rem;
+        padding-inline: 0.25rem;
+        padding-block: 0.5rem;
 
         .actions {
             display: flex;
