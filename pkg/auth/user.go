@@ -3,6 +3,8 @@ package auth
 import (
 	"context"
 	"time"
+
+	"pyra/pkg/db"
 )
 
 type User struct {
@@ -18,6 +20,8 @@ type User struct {
 }
 
 type UserRepository interface {
+	db.Repository[UserRepository]
+
 	FindByID(ctx context.Context, id uint64) (user User, err error)
 	FindByEmail(ctx context.Context, email string) (user User, err error)
 	Create(ctx context.Context, user User) (uint64, error)
