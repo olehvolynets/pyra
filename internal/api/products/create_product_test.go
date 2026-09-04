@@ -16,7 +16,7 @@ func Test_CreateProductHandler(t *testing.T) {
 	test.SetCWDToProjectRoot(t)
 
 	db := test.DB(t)
-	api := NewTestProductsAPI(db)
+	api := NewAPI(db)
 	h := test.NewMux(http.MethodPost, ProductsPATH, api.Create(), t.Output())
 
 	t.Run("success (minimal params)", func(t *testing.T) {

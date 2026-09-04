@@ -14,7 +14,7 @@ func Test_DeleteProductHandler(t *testing.T) {
 	test.SetCWDToProjectRoot(t)
 
 	db := test.DB(t)
-	api := NewTestProductsAPI(db)
+	api := NewAPI(db)
 	h := test.NewMux(http.MethodDelete, ProductPATH, api.Delete(), t.Output())
 
 	t.Run("success", func(t *testing.T) {

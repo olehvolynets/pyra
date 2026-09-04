@@ -17,6 +17,16 @@ func NewRepository(db db.DBTX) auth.UserRepository {
 	}
 }
 
+func (r *UserRepository) BeginTx(ctx context.Context) (db.DBTX, error) {
+	return r.db.BeginTx(ctx, nil)
+}
+
+func (r *UserRepository) WithTx(tx db.DBTX) auth.UserRepository {
+	return &UserRepository{
+		db: tx,
+	}
+}
+
 func (svc *UserRepository) FindByID(ctx context.Context, id uint64) (user auth.User, err error) {
 	row := svc.db.QueryRowContext(ctx, "SELECT * FROM users WHERE id = $1 LIMIT 1;", id)
 

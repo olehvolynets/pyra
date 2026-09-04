@@ -15,9 +15,8 @@ func Test_CreateDishHandler(t *testing.T) {
 	test.SetCWDToProjectRoot(t)
 
 	db := test.DB(t)
-	api := NewTestDishAPI(db)
-	ep := api.Create().(*CreateDishHandler)
-	h := test.NewMux(http.MethodPost, DishesPATH, ep, t.Output())
+	api := NewAPI(db)
+	h := test.NewMux(http.MethodPost, DishesPATH, api.Create(), t.Output())
 
 	t.Run("success (minimal params)", func(t *testing.T) {
 		t.Cleanup(db.Truncate)
@@ -28,7 +27,7 @@ func Test_CreateDishHandler(t *testing.T) {
 
 		assert.Equal(t, http.StatusFound, res.StatusCode)
 
-		dbDishes, err := ep.DishRepo.Index(t.Context())
+		dbDishes, err := api.DishRepo.Index(t.Context())
 		if assert.NoError(t, err) {
 			require.Len(t, dbDishes, 1)
 

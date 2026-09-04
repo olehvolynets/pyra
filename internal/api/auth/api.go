@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"embed"
 	"html/template"
 	"net/http"
 
@@ -10,8 +11,11 @@ import (
 
 var signInTemplate *template.Template
 
+//go:embed templates
+var templateFS embed.FS
+
 func init() {
-	signInTemplate = handler.ExtendedTemplate("view/auth/sign_in.html")
+	signInTemplate = handler.ExtendedTemplate(templateFS, "templates/sign_in.html")
 }
 
 type API struct {

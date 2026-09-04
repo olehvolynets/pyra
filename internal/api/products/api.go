@@ -1,6 +1,7 @@
 package products
 
 import (
+	"embed"
 	"html/template"
 	"net/http"
 
@@ -23,11 +24,14 @@ var (
 	editProductTemplate *template.Template
 )
 
+//go:embed templates
+var templateFS embed.FS
+
 func init() {
 	handler.GlobalAddFuncs(URIHelpers)
-	productListTemplate = handler.ExtendedTemplate("view/products/index.html")
-	productTemplate = handler.ExtendedTemplate("view/products/show.html")
-	editProductTemplate = handler.ExtendedTemplate("view/products/edit.html")
+	productListTemplate = handler.ExtendedTemplate(templateFS, "templates/index.html")
+	productTemplate = handler.ExtendedTemplate(templateFS, "templates/show.html")
+	editProductTemplate = handler.ExtendedTemplate(templateFS, "templates/edit.html")
 }
 
 func NewAPI(db db.DBTX) *API {

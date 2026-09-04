@@ -14,8 +14,8 @@ func Test_IndexProductsHandler(t *testing.T) {
 	test.SetCWDToProjectRoot(t)
 
 	db := test.DB(t)
-	api := NewTestProductsAPI(db)
-	h := test.NewMux(http.MethodGet, ProductsPATH, api.Index(), t.Output())
+	api := NewAPI(db)
+	h := test.NewMux(http.MethodGet, ProductsPATH, api.List(), t.Output())
 	
 	t.Run("success", func(t *testing.T) {
 		t.Run("with products", func(t *testing.T) {

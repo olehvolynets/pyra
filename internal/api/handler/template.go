@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"embed"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
+	"io/fs"
 )
 
 type RenderContext struct {
@@ -32,12 +34,15 @@ func NewFlash(severity FlashSeverity, msg string) FlashMessage {
 
 var baseTemplate = template.New("drivers")
 
+//go:embed templates
+var templateFS embed.FS
+
 func init() {
 	baseTemplate.Funcs(TemplateHelpers)
 
-	template.Must(baseTemplate.ParseGlob("view/layout/*.html"))
-	template.Must(baseTemplate.ParseGlob("view/errors/*.html"))
-	template.Must(baseTemplate.ParseGlob("view/components/*.html"))
+	template.Must(baseTemplate.ParseFS(templateFS, "templates/layout/*.html"))
+	template.Must(baseTemplate.ParseFS(templateFS, "templates/errors/*.html"))
+	template.Must(baseTemplate.ParseFS(templateFS, "templates/components/*.html"))
 }
 
 func GlobalAddFuncs(fms ...template.FuncMap) {
@@ -46,9 +51,9 @@ func GlobalAddFuncs(fms ...template.FuncMap) {
 	}
 }
 
-func ExtendedTemplate(templates ...string) *template.Template {
+func ExtendedTemplate(fs fs.FS, templates ...string) *template.Template {
 	t := template.Must(baseTemplate.Clone())
-	_ = template.Must(t.ParseFiles(templates...))
+	_ = template.Must(t.ParseFS(fs, templates...))
 
 	return t
 }

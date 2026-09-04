@@ -1,6 +1,7 @@
 package dishes
 
 import (
+	"embed"
 	"html/template"
 	"net/http"
 
@@ -25,12 +26,15 @@ var (
 	editDishTemplate *template.Template
 )
 
+//go:embed templates
+var templateFS embed.FS
+
 func init() {
 	handler.GlobalAddFuncs(URIHelpers)
-	dishListTemplate = handler.ExtendedTemplate("view/dishes/index.html")
-	dishTemplate = handler.ExtendedTemplate("view/dishes/show.html")
-	newDishTemplate = handler.ExtendedTemplate("view/dishes/new.html")
-	// editDishTemplate = handler.ExtendedTemplate("view/dishes/edit.html")
+	dishListTemplate = handler.ExtendedTemplate(templateFS, "templates/index.html")
+	dishTemplate = handler.ExtendedTemplate(templateFS, "templates/show.html")
+	newDishTemplate = handler.ExtendedTemplate(templateFS, "templates/new.html")
+	// editDishTemplate = handler.ExtendedTemplate(templateFS, "templates/edit.html")
 }
 
 func NewAPI(db db.DBTX) *API {

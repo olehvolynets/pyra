@@ -15,14 +15,14 @@ func Test_DeleteDishHandler(t *testing.T) {
 	test.SetCWDToProjectRoot(t)
 
 	db := test.DB(t)
-	ep := NewTestDishAPI(db).Delete().(*DeleteDishHandler)
-	h := test.NewMux(http.MethodDelete, DishPATH, ep, t.Output())
+	api := NewAPI(db)
+	h := test.NewMux(http.MethodDelete, DishPATH, api.Delete(), t.Output())
 
 	t.Run("success", func(t *testing.T) {
 		t.Cleanup(db.Truncate)
 
 		d := nutrition.FakeDish()
-		if err := ep.DishRepo.Create(t.Context(), &d); err != nil {
+		if err := api.DishRepo.Create(t.Context(), &d); err != nil {
 			t.Fatal(err)
 		}
 
@@ -30,7 +30,7 @@ func Test_DeleteDishHandler(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, res.StatusCode)
 
-		dbDishes, err := ep.DishRepo.Index(t.Context())
+		dbDishes, err := api.DishRepo.Index(t.Context())
 		if err != nil {
 			t.Fatal(err)
 		}

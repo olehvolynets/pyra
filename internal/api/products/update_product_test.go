@@ -17,7 +17,7 @@ func Test_UpdateProductHandler(t *testing.T) {
 	test.SetCWDToProjectRoot(t)
 
 	db := test.DB(t)
-	api := NewTestProductsAPI(db)
+	api := NewAPI(db)
 	h := test.NewMux(http.MethodPut, ProductPATH, api.Update(), t.Output())
 
 	t.Run("when not found", func(t *testing.T) {
