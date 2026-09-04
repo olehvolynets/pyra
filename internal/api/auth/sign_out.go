@@ -3,17 +3,13 @@ package auth
 import (
 	"net/http"
 
-	"pyra/internal/api/base"
+	"pyra/internal/api/handler"
 )
 
-type SignOutHandler struct {
-	*base.Handler
-}
+func SignOut(api *API, w http.ResponseWriter, r *http.Request) {
+	session := handler.RequestSession(r)
 
-func (h *SignOutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	session := h.Session(r)
-
-	delete(session.Values, base.UserIDSessionKey)
+	delete(session.Values, handler.UserIDSessionKey)
 
 	w.Header().Add("HX-Redirect", "/signIn")
 	w.WriteHeader(http.StatusNoContent)

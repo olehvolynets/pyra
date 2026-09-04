@@ -1,53 +1,36 @@
 package auth
 
 import (
+	"html/template"
 	"net/http"
 
-	"pyra/internal/api/base"
+	"pyra/internal/api/handler"
 	"pyra/pkg/auth"
 )
 
+var signInTemplate *template.Template
+
+func init() {
+	signInTemplate = handler.ExtendedTemplate("view/auth/sign_in.html")
+}
+
 type API struct {
-	*base.API
-	svc *auth.AuthService
+	UserRepo auth.UserRepository
+	ProviderRepo auth.ProviderRepository
 }
 
-func NewAPI(api *base.API) *API {
-	svc := auth.NewService(
-		api.DB,
-		auth.NewProviderRepository(api.DB),
-		auth.NewUserRepository(api.DB),
-	)
-
-	return &API{
-		API: api,
-		svc: svc,
-	}
+func (authAPI *API) SignIn() http.Handler {
+	return handler.New(authAPI, SignIn)
 }
 
-func (api *API) SignIn() http.Handler {
-	baseHandler := api.NewHandler("view/auth/sign_in.html")
-
-	return &SignInHandler{
-		Handler: baseHandler,
-	}
+func (authAPI *API) SignOut() http.Handler {
+	return handler.New(authAPI, SignOut)
 }
 
-func (api *API) SignOut() http.Handler {
-	return &SignOutHandler{
-		Handler: api.NewHandler(),
-	}
+func (authAPI *API) GoogleAuthorize() http.Handler {
+	return handler.New(authAPI, GoogleAuthorize)
 }
 
-func (api *API) GoogleAuthorize() http.Handler {
-	return &GoogleAuthHandler{
-		Handler: api.NewHandler(),
-	}
-}
-
-func (api *API) GoogleCallback() http.Handler {
-	return &GoogleCallbackHandler{
-		Handler: api.NewHandler(),
-		authSvc: api.svc,
-	}
+func (authAPI *API) GoogleCallback() http.Handler {
+	return handler.New(authAPI, GoogleCallback)
 }

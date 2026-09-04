@@ -3,13 +3,9 @@ package auth
 import (
 	"net/http"
 
-	"pyra/internal/api/base"
+	"pyra/internal/api/handler"
 )
 
-type SignInHandler struct {
-	*base.Handler
-}
-
-func (h *SignInHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.Render(w, r, "sign-in", nil)
+func SignIn(api *API, w http.ResponseWriter, r *http.Request) {
+	handler.Render(w, signInTemplate, "sign-in", nil)
 }

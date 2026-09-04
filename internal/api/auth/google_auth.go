@@ -8,7 +8,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
-	"pyra/internal/api"
+	"pyra/internal/api/handler"
 )
 
 var googleConfig = &oauth2.Config{
@@ -23,13 +23,9 @@ var googleConfig = &oauth2.Config{
 	Endpoint: google.Endpoint,
 }
 
-type GoogleAuthHandler struct {
-	*api.Handler
-}
-
-func (h *GoogleAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log := h.RequestLogger(r)
-	session := h.Session(r)
+func GoogleAuthorize(api *API, w http.ResponseWriter, r *http.Request) {
+	log := handler.RequestLogger(r)
+	session := handler.RequestSession(r)
 
 	state := uuid.New()
 	session.Values["state"] = state.String()
